@@ -1,3 +1,7 @@
+# pick this up again at id: how many children; need to customize that page to just ask how many kids if they said they want protection for kids
+
+
+
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
@@ -216,10 +220,11 @@ code: |
   
   #main questions
   trial_court
+  docket_number
   set_progress(8)
   
   who_needs_protection  
-  if who_needs_protection["order_obo_child"]:
+  if who_needs_protection == 'order_obo_child':
     users.gather()
     users[0].name.first
     users[0].birthdate
@@ -233,6 +238,8 @@ code: |
     parent_guardian
     incarcerated
     children1_no_shelter
+    if children1_no_shelter:
+      rent_or_own
     set_progress(12)
     serious_incident_date
     danger_more_abuse
@@ -242,12 +249,11 @@ code: |
     if request_temp_PRR:
       get_kids_relationships
       other_children_PRR
-    request_all_emergency
-    existing_order
-    trial_court
-    docket_number
-    set_progress(90)
+
+
+
   
+
   nav.set_section("about")
   users.gather()
   set_parts(subtitle=str(users))
@@ -290,8 +296,13 @@ code: |
     get_kids_relationships
   if other_request:
     request_other_description
-  request_all_emergency
   set_progress(70)
+  
+  
+  
+    
+    
+  request_all_emergency  
   existing_order
   nav.set_section('service')
   details_for_law_enforcement
@@ -360,20 +371,81 @@ code: |
   
 #####QUESTIONS AND CODE####  
 
-###ADDITIONS TO MERG IN OBO CHILD COMPLAINT###
+###ADDITIONS TO MERGE IN OBO CHILD COMPLAINT###
 ---
 mandatory: True
 code: |
-  if who_needs_protection["order_obo_child"]:
+  if who_needs_protection == 'order_obo_child':
     RFAcomplaintonbehalfofminor_attachment.enabled = True
     RFAcomplaint.enabled = False
   else:
     RFAcomplaintonbehalfofminor_attachment = False
     RFAcomplaint.enabled = True
+---
+id: OBO CHILD how children related to you and defendant
+question: |
+  Relationship to the child or children
+fields:
+  - note: |
+      **Your relationship to them**
+  - "In a word or two, what is your relationship to the child or children?": users1_relationship_to_children1
+    maxlength: 24
+  - note: |
+      **Defendant's relationship to them**
+      
+      Now choose the best description of the defendant's relationship to the child or children. The "defendant" is the person who is abusing the child/children.
+    
+      Choose one.
+  
+  - "Parent or guardian": parent_guardian
+    datatype: yesno
+  - "Family member": family_member
+    datatype: yesno
+  - "Family member description": family_member_description
+    maxlength: 24
+    show if: family_member
+  - "Person who lives or has lived in the household with the child": live_together
+    datatype: yesno
+  - "Child and defendant have or have had a dating relationship": dating
+    datatype: yesno
+  - "Other relationship": other_relationship
+    datatype: yesno
+  - "Other relationship description": other_relationship_description
+    maxlength: 32
+    show if: other_relationship
+validation code: |
+  if [parent_guardian, family_member, live_together, dating, other_relationship].count(True) == 0:
+    validation_error("Please select one option.")
+  if [parent_guardian, family_member, live_together, dating, other_relationship].count(True) > 1:
+    validation_error("Please select one option.")
+---
+id: OBO more about the situation    
+question: |
+  More about the situation
+fields:    
+  - note: |
+      Select all that apply to this situation.
+  - "Defendant is incarcerated and has been convicted of one of the crimes specified in 15 V.S.A. §1103(c)(1)(B) ${ display_template(list_of_crimes, scrollable=True, collapse=True) }": incarcerated
+    datatype: yesno
+  - "Defendant has used, displayed, or threatened to use a firearm against the children or against a family member.": used_firearm
+    datatype: yesno
+  - "The child or children will be forced to leave their current home and will be without shelter unless defendant is ordered to leave the residence.  IF YES, JUMP TO REGULAR RFA QUESTIONS ABOUT SHARED HOME id: About your home continued": children1_no_shelter
+    datatype: yesno
+---
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 id: basic questions intro screen
-#decoration: form-lineal
 question: |
   **${interview_short_title} in Vermont**
 subquestion: |  
@@ -531,15 +603,14 @@ question: |
   Who needs protection
 fields:
   - "Who needs protection from abuse?": who_needs_protection
-    datatype: checkboxes
-    none of the above: False
-    minlength: 1
+    input type: radio
     choices:
       - "I need this order to protect **me only**": order_for_me
       - "I need this order to protect **me and my child or children**": order_for_both
       - "I’m asking for an RFA order **only on behalf of a child or children** under the age of 18": order_obo_child
   - note: |
       Next we'll ask about you, the person filling out this form. You are the petitioner or plaintiff.
+
 ---
 id: initial_screening_questions_3_exit
 question: |
@@ -569,7 +640,7 @@ question: |
 fields:
   - "Does the defendant live in Vermont?": defendant_lives_in_vermont
     datatype: yesnomaybe
-  - note: The "defendant" is the person who is abusing you.
+  - note: The "defendant" is the person who is abusing you or the child/children.
 ---
 id: initial_screening_questions_5_continue
 question: |
@@ -770,19 +841,21 @@ fields:
   - "I consent to the release of my address and contact information.": share_contact
     datatype: yesnoradio
 ---
+#code: |
+#  if who_needs_protection == 'order_obo_child':
+#    children.there_are_any == True
+#  if who_needs_protection == 'order_for_both':
+#    children.there_are_any == True
+---
 id: how many children
 question: |
-  % if al_form_type in ['starts_case','existing_case','appeal']:
-  Are any children involved in this case? 
-  % else:
-  Are any children involved in this matter?
-  % endif  
+  Children involved in this case
 fields:
   - note: |
       Include children under 18 who have been affected by abuse. Also include children who you would like to ask for temporary custody of.
-  - no label: children.there_are_any
+  - Are children involved in this case?: children.there_are_any
     datatype: yesnoradio
-  - How many?: children.target_number
+  - How many children are involved in this case?: children.target_number
     datatype: integer
     show if: children.there_are_any
 validation code: |
@@ -828,7 +901,12 @@ sets:
 question: |
   Name of defendant
 fields:
-  - note: The "defendant" is the person who is abusing you.
+  - note: |
+      % if who_needs_protection == 'order_obo_child':
+      The "defendant" is the person who is abusing the child or children.
+      % else:
+      The "defendant" is the person who is abusing you.
+      % endif
   - First Name: other_parties[0].name.first
   - Middle Name: other_parties[0].name.middle
     required: False
