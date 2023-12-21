@@ -193,11 +193,7 @@ code: |
       initial_screening_questions_2_exit
   if relationship_question == 'None of the above':
     initial_screening_questions_2_exit_a
-    
-  who_needs_protection  
-  if who_needs_protection == 'I’m asking for an RFA order only for a child or children':
-    initial_screening_questions_3_exit
-      
+        
   plaintiff_lives_in_vermont
   if plaintiff_lives_in_vermont:
     defendant_lives_in_vermont
@@ -221,6 +217,37 @@ code: |
   #main questions
   trial_court
   set_progress(8)
+  
+  who_needs_protection  
+  if who_needs_protection["order_obo_child"]:
+    users.gather()
+    users[0].name.first
+    users[0].birthdate
+    children.gather()
+    children[0].name.first
+    children[0].birthdate
+    other_parties.gather()
+    other_parties[0].name.first
+    other_parties[0].birth_month
+    other_parties[0].address.address
+    parent_guardian
+    incarcerated
+    children1_no_shelter
+    set_progress(12)
+    serious_incident_date
+    danger_more_abuse
+    if danger_more_abuse:
+      get_kids_in_danger
+    request_not_abuse_children
+    if request_temp_PRR:
+      get_kids_relationships
+      other_children_PRR
+    request_all_emergency
+    existing_order
+    trial_court
+    docket_number
+    set_progress(90)
+  
   nav.set_section("about")
   users.gather()
   set_parts(subtitle=str(users))
@@ -499,16 +526,20 @@ buttons:
   - DELETE answers and EXIT to legal help site: exit
     url: https://vtlawhelp.org/stalking-and-sexual-assault
 ---
-id: initial_screening_questions_3
+id: who needs protection from abuse
 question: |
-  See if this interview is right for your situation
+  Who needs protection
 fields:
   - "Who needs protection from abuse?": who_needs_protection
-    input type: radio
+    datatype: checkboxes
+    none of the above: False
+    minlength: 1
     choices:
-      - I need this order to protect me
-      - I need this order to protect me and my child or children
-      - I’m asking for an RFA order only for a child or children
+      - "I need this order to protect **me only**": order_for_me
+      - "I need this order to protect **me and my child or children**": order_for_both
+      - "I’m asking for an RFA order **only on behalf of a child or children** under the age of 18": order_obo_child
+  - note: |
+      Next we'll ask about you, the person filling out this form. You are the petitioner or plaintiff.
 ---
 id: initial_screening_questions_3_exit
 question: |
