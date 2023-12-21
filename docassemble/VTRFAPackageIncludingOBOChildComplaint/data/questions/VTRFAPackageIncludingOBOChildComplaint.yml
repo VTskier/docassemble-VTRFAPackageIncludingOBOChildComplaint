@@ -328,6 +328,22 @@ code: |
   )
   nav.set_section('get_docs')
   RFApackage_download
+  
+  
+  
+#####QUESTIONS AND CODE####  
+
+###ADDITIONS TO MERG IN OBO CHILD COMPLAINT###
+---
+mandatory: True
+code: |
+  if who_needs_protection["order_obo_child"]:
+    RFAcomplaintonbehalfofminor_attachment.enabled = True
+    RFAcomplaint.enabled = False
+  else:
+    RFAcomplaintonbehalfofminor_attachment = False
+    RFAcomplaint.enabled = True
+
 ---
 id: basic questions intro screen
 #decoration: form-lineal
@@ -3079,16 +3095,17 @@ content: |
 # ALDocument objects specify the metadata for each template
 objects:
   - RFApackage_Post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing these forms with the court", filename="RFApackage_next_steps.docx", enabled=True, has_addendum=False)
-  - RFAcomplaint: ALDocument.using(title="RFA Complaint", filename="1_RFA-complaint", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - RFAaffidavit: ALDocument.using(title="RFA Affidavit", filename="3_RFA-affidavit", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - RFAcomplaint: ALDocument.using(title="RFA Complaint", filename="1_RFA-complaint", has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - RFAcomplaintonbehalfofminor_attachment: ALDocument.using(title="RFA Complaint on behalf of a child or children", filename="5_RFA_complaint_on_behalf_of_minor", has_addendum=False, )
+  - RFAaffidavit: ALDocument.using(title="RFA Affidavit", filename="3_RFA-affidavit", has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
   - RFAconfidentialcontactinfo: ALDocument.using(title="Confidential Contact Info", filename="4_RFA-confidential-contact-info", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
   - RFAserviceinfo: ALDocument.using(title="Protection Order Service Info", filename="2_RFA-service-info", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 
 ---
 # Bundles group the ALDocuments into separate downloads, such as for court and for the user
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[RFApackage_Post_interview_instructions, RFAcomplaint, RFAaffidavit, RFAconfidentialcontactinfo, RFAserviceinfo], filename="RFApackage", title="Download all forms", enabled=True)
-  #- al_court_bundle: ALDocumentBundle.using(elements=[RFAaffidavit, RFAconfidentialcontactinfo, RFAcomplaint, RFAserviceinfo],  filename="RFApackage", title="All forms to deliver to court", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[RFApackage_Post_interview_instructions, RFAcomplaint, RFAcomplaintonbehalfofminor_attachment, RFAaffidavit, RFAconfidentialcontactinfo, RFAserviceinfo], filename="RFApackage", title="Download all forms", enabled=True)
+  #- al_court_bundle: ALDocumentBundle.using(elements=[RFAaffidavit, RFAconfidentialcontactinfo, RFAcomplaint, RFAcomplaintonbehalfofminor_attachment, RFAserviceinfo],  filename="RFApackage", title="All forms to deliver to court", enabled=True)
 ---
 attachment:
   variable name: RFAaffidavit.addendum
@@ -3099,6 +3116,135 @@ attachment:
 # Each attachment defines a key in an ALDocument. We use `i` as the placeholder here so the same template is 
 # used for "preview" and "final" keys, and logic in the template checks the value of 
 # `i` to show or hide the user's signature
+---
+attachment:
+  name: 5 RFA_complaint_on_behalf_of_minor
+  filename: 5_RFA_complaint_on_behalf_of_minor
+  variable name: RFAcomplaintonbehalfofminor_attachment[i]
+  skip undefined: True
+  pdf template file: 5_RFA-complaint-on-behalf-of-minor.pdf
+  fields:
+      - "trial_court_county": ${ trial_court.address.county }
+      - "docket_number": ${ docket_number }
+      - "children1_name": ${ children[0] }
+      - "children1_name": ${ children[0] }
+      - "children1_name": ${ children[0] }
+      - "children1_birthdate": ${ format_date(children[0].birthdate, format='M/d/yyyy') }
+      - "children1_birthdate": ${ format_date(children[0].birthdate, format='M/d/yyyy') }
+      - "children1_birthdate": ${ format_date(children[0].birthdate, format='M/d/yyyy') }
+      - "other_parties1_name": ${ other_parties[0] }
+      - "other_parties1_name": ${ other_parties[0] }
+      - "other_parties1_birthdate": >-
+          ${ "/".join([str(f) for f in [other_parties[0].birth_month, other_parties[0].birth_day, other_parties[0].birth_year] if f]) }
+      - "users1_name": ${ users[0] }
+      - "users1_birthdate": ${ format_date(users[0].birthdate, format='M/d/yyyy') }
+      - "users1_relationship_to_children1": ${ users1_relationship_to_children1 }
+      - "other_parties1_address_address": ${ other_parties[0].address.address }
+      - "other_parties1_address_state": ${ other_parties[0].address.state }
+      - "other_parties1_address_zip": ${ other_parties[0].address.zip }
+      - "other_parties1_address_city": ${ other_parties[0].address.city }
+      - "parent_guardian": ${ parent_guardian }
+      - "family_member_description": ${ family_member_description }
+      - "family_member": ${ family_member }
+      - "live_together": ${ live_together }
+      - "dating": ${ dating }
+      - "other_relationship_description": ${ other_relationship_description }
+      - "other_relationship": ${ other_relationship }
+      - "existing_order_divorce_yes": ${ existing_order["existing_order_divorce"] }
+      - "existing_order_divorce_no": ${ not existing_order["existing_order_divorce"] }
+      - "dissolution_yes": ${ existing_order["dissolution"] }
+      - "dissolution_no": ${ not existing_order["dissolution"] }
+      - "existing_order_RFA_yes": ${ existing_order["existing_order_RFA"] }
+      - "existing_order_RFA_no": ${ not existing_order["existing_order_RFA"] }
+      - "criminal_proceeding_yes": ${ existing_order["criminal_proceeding"] }
+      - "criminal_proceeding_no": ${ not existing_order["criminal_proceeding"] }
+      - "parentage_order_yes": ${ existing_order["parentage_order"] }
+      - "parentage_order_no": ${ not existing_order["parentage_order"] }
+      - "guardianship_order_yes": ${ existing_order["guardianship_order"] }
+      - "guardianship_order_no": ${ not existing_order["guardianship_order"] }
+      - "child_support_order_yes": ${ existing_order["child_support_order"] }
+      - "child_support_order_no": ${ not existing_order["child_support_order"] }
+      - "juvenile_order_yes": ${ existing_order["juvenile_order"] }
+      - "juvenile_order_no": ${ not existing_order["juvenile_order"] }
+      - "existing_order_state": ${ existing_order_state }
+      - "existing_order_county": ${ existing_order_county }
+      - "existing_order_users_attorney": ${ existing_order_users_attorney }
+      - "existing_order_OP_attorney": ${ existing_order_OP_attorney }
+      - "serious_incident_date": ${ serious_incident_date.format() }
+      - "serious_incident_yes": ${ True }
+      - "serious_incident_abused": ${ serious_incident_abused }
+      - "other_parties1_parent_abuse": ${ other_parties1_parent_abuse }
+      - "serious_incident_stalked_children": ${ serious_incident_stalked_children }
+      - "serious_incident_assault": ${ serious_incident_assault }
+      - "serious_incident_harm": ${ serious_incident_harm }
+      - "serious_incident_fear": ${serious_incident_fear }
+      - "danger_more_abuse": ${ danger_more_abuse }
+      - "danger_more_abuse_children": ${ children[0].in_danger }
+      - "danger_more_abuse_other_children": |
+          % if children[1].in_danger or children[2].in_danger:
+          True
+          % else:
+          False
+          % endif
+      - "children1_relationship_users1": ${ children[0].relationship_users1 }
+      - "children1_relationship_users1": ${ children[0].relationship_users1 }
+      - "children1_relationship_OP": ${ children[0].relationship_OP }
+      - "children1_relationship_OP": ${ children[0].relationship_OP }
+      - "children2_name": ${ children[1] }
+      - "children2_name": ${ children[1] }
+      - "children2_birthdate": ${ format_date(children[1].birthdate, format='M/d/yyyy') }
+      - "children2_birthdate": ${ format_date(children[1].birthdate, format='M/d/yyyy') }
+      - "children2_relationship_users1": ${ children[1].relationship_users1 }
+      - "children2_relationship_users1": ${ children[1].relationship_users1 }
+      - "children2_relationship_OP": ${ children[1].relationship_OP }
+      - "children2_relationship_OP": ${ children[1].relationship_OP }
+      - "children3_name": ${ children[2] }
+      - "children3_name": ${ children[2] }
+      - "children3_birthdate": ${ format_date(children[2].birthdate, format='M/d/yyyy') }
+      - "children3_birthdate": ${ format_date(children[2].birthdate, format='M/d/yyyy') }
+      - "children3_relationship_users1": ${ children[2].relationship_users1 }
+      - "children3_relationship_users1": ${ children[2].relationship_users1 }
+      - "children3_relationship_OP": ${ children[2].relationship_OP }
+      - "children3_relationship_OP": ${ children[2].relationship_OP }
+      - "used_firearm": ${ used_firearm }
+      - "incarcerated": ${ incarcerated }
+      - "children1_no_shelter": ${ children1_no_shelter }
+      - "residence_shared_address": ${ residence_shared_address }
+      - "residence_owned": ${ residence_owned }
+      - "residence_rented": ${ residence_rented }
+      - "residence_of_users1": ${ residence_of_users1 }
+      - "residence_of_both": ${ residence_of_both }
+      - "residence_of_other": ${ residence_of_other }
+      - "residence_of_OP": ${ residence_of_OP }
+      - "request_not_abuse_children": ${ request_not_abuse_children }
+      - "request_no_stalking_assault": ${ request_no_stalking_assault }
+      - "request_leave": ${ request_leave }
+      - "request_no_firearms": ${ request_no_firearms }
+      - "request_surrender_firearms": ${ request_surrender_firearms }
+      - "request_no_pet_harm": ${ request_no_pet_harm }
+      - "request_control_of_pet": ${ request_control_of_pet }
+      - "request_stay_away_feet": ${ request_stay_away_feet }
+      - "request_stay_away": ${ request_stay_away }
+      - "request_no_contact_children": ${ request_no_contact_children }
+      - "request_temp_PRR": ${ request_temp_PRR }
+      - "other_children_PRR_names": ${ other_children_PRR_names }
+      - "other_children_PRR": ${ other_children_PRR }
+      - "request_supervised_contact": ${ request_supervised_contact }
+      - "supervisor1_name": ${ supervisor1_name }
+      - "supervisor1_location": ${ supervisor1_location }
+      - "request_children_exchange": ${ request_children_exchange }
+      - "supervisor2_location": ${ supervisor2_location }
+      - "supervisor2_name": ${ supervisor2_name }
+      - "request_no_drug_or_alcohol": ${ request_no_drug_or_alcohol }
+      - "request_no_punish": ${ request_no_punish }
+      - "request_child_support": ${ request_child_support }
+      - "request_other_description": ${ request_other_description }
+      - "request_other": ${ request_other }
+      - "request_all_emergency": ${ request_all_emergency }
+      - "signature_date": ${ signature_date }
+      - "users1_signature": ${ users[0].signature_if_final(i) }
+
+---
 attachment:
   name: Post-interview-Instructions
   filename: RFApackage_next_steps
