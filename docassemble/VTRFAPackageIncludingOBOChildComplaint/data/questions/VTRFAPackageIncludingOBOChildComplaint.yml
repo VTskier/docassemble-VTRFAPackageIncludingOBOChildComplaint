@@ -1,4 +1,4 @@
-# pick this up again at id: how many children; need to customize that page to just ask how many kids if they said they want protection for kids
+# pick this up again after OBO more about the situation  
 
 
 
@@ -228,15 +228,17 @@ code: |
     users.gather()
     users[0].name.first
     users[0].birthdate
+    users[0].address.address
+    users[0].phone_number
     children.gather()
     children[0].name.first
     children[0].birthdate
     other_parties.gather()
     other_parties[0].name.first
-    other_parties[0].birth_month
+    other_parties_estimated_age
     other_parties[0].address.address
     parent_guardian
-    incarcerated
+    more_about_situation
     children1_no_shelter
     if children1_no_shelter:
       rent_or_own
@@ -272,7 +274,7 @@ code: |
   ex_spouse
   other_parties.gather()
   set_progress(32)
-  other_parties[0].birth_month
+  other_parties_estimated_age
   ask_defendant_address
   other_parties[0].phone_number
   more_about_defendant
@@ -420,6 +422,7 @@ validation code: |
     validation_error("Please select one option.")
 ---
 id: OBO more about the situation    
+continue button field: more_about_situation
 question: |
   More about the situation
 fields:    
@@ -429,8 +432,11 @@ fields:
     datatype: yesno
   - "Defendant has used, displayed, or threatened to use a firearm against the children or against a family member.": used_firearm
     datatype: yesno
-  - "The child or children will be forced to leave their current home and will be without shelter unless defendant is ordered to leave the residence.  IF YES, JUMP TO REGULAR RFA QUESTIONS ABOUT SHARED HOME id: About your home continued": children1_no_shelter
+  - "The child or children will be forced to leave their current home and will be without shelter unless defendant is ordered to leave the residence.": children1_no_shelter
     datatype: yesno
+  - note: |
+      We'll ask you about that home on the next screen.
+    show if: children1_no_shelter
 ---
 
 
@@ -609,7 +615,7 @@ fields:
       - "I need this order to protect **me and my child or children**": order_for_both
       - "I’m asking for an RFA order **only on behalf of a child or children** under the age of 18": order_obo_child
   - note: |
-      Next we'll ask about you, the person filling out this form. You are the petitioner or plaintiff.
+      Next we'll ask about you, the person filling out this form. You are called the "petitioner" or "plaintiff."
 
 ---
 id: initial_screening_questions_3_exit
@@ -852,6 +858,14 @@ question: |
   Children involved in this case
 fields:
   - note: |
+      % if who_needs_protection == 'order_obo_child':
+      Please confirm that children are involved.
+      % elif who_needs_protection == 'order_obo_child':
+      Please confirm that children are involved.
+      % else:
+      Are there any children involved in this case?
+      % endif
+      
       Include children under 18 who have been affected by abuse. Also include children who you would like to ask for temporary custody of.
   - Are children involved in this case?: children.there_are_any
     datatype: yesnoradio
@@ -1604,7 +1618,7 @@ fields:
 ---
 id: About your home continued 
 question: |
-  Tell us about your home
+  Tell us about the home
 fields:
   - "What is the address of the home?": residence_shared_address
     datatype: object_radio
