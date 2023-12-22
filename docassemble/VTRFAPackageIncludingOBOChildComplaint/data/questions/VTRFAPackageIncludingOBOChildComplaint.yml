@@ -1,4 +1,4 @@
-# pick this up again after OBO more about the situation  
+# pick this up again at id: What you want to ask for in the RFA order
 
 
 
@@ -239,13 +239,12 @@ code: |
     other_parties[0].address.address
     parent_guardian
     more_about_situation
-    children1_no_shelter
     if children1_no_shelter:
       rent_or_own
     set_progress(12)
     serious_incident_date
-    danger_more_abuse
-    if danger_more_abuse:
+    OBO_danger_more_abuse
+    if OBO_danger_more_abuse:
       get_kids_in_danger
     request_not_abuse_children
     if request_temp_PRR:
@@ -438,13 +437,36 @@ fields:
       We'll ask you about that home on the next screen.
     show if: children1_no_shelter
 ---
-
-
-
-
-
-
-
+code: |
+  for child in children: 
+    child.in_danger
+    #child.relationship_users1
+    #child.relationship_OP
+  get_kids_in_danger = True
+---
+id: OBO danger of more abuse
+question: |
+  Danger of more abuse
+subquestion: |
+  If you want to get a court order that starts right way, answer **Yes** to this question.
+fields:
+  - "Is there immediate danger of more abuse from the defendant?": OBO_danger_more_abuse
+    datatype: yesnoradio
+---
+id: OBO children in danger relationships
+generic object: Individual     
+question: |
+  About ${x.name.first}
+fields:
+  - Is ${x.name.first} in danger of more abuse?: x.in_danger
+    datatype: yesnoradio
+  - "In 1 or 2 words, what is ${x.name.first}'s relationship to you?": x.relationship_users1
+    maxlength: 22
+    show if: x.in_danger
+  - "What is ${x.name.first}'s relationship to the defendant?": x.relationship_OP
+    maxlength: 22
+    show if: x.in_danger
+---
 
 
 
@@ -1264,6 +1286,30 @@ fields:
     input type: area
     rows: 20
     show if: other_incident
+---
+id: danger of more abuse
+question: |
+  Danger of more abuse
+subquestion: |
+  If you want to get a court order that starts right way, answer **Yes** to this question.
+fields:
+  - "Is there immediate danger of more abuse from the defendant?": danger_more_abuse
+    datatype: yesnoradio
+    
+  - "Select all that apply": danger_more_abuse_who
+    datatype: checkboxes
+    show if: danger_more_abuse
+    none of the above: False
+    minlength: 1
+    choices:
+      - "There is danger of more abuse to you": users1
+      - "There is danger of more abuse to the child/children": children
+    
+  - "Include any information not already described before. Be as specific as possible.": danger_more_abuse_why
+    input type: area
+    show if: danger_more_abuse
+    maxlength: 310
+    required: False
 ---
 id: Danger of more abuse
 question: |
@@ -3301,8 +3347,13 @@ attachment:
       - "serious_incident_assault": ${ serious_incident_assault }
       - "serious_incident_harm": ${ serious_incident_harm }
       - "serious_incident_fear": ${serious_incident_fear }
-      - "danger_more_abuse": ${ danger_more_abuse }
-      - "danger_more_abuse_children": ${ children[0].in_danger }
+      - "danger_more_abuse": ${ OBO_danger_more_abuse }
+      - "danger_more_abuse_children": |
+          % if children[0].in_danger:
+          True
+          % else:
+          False
+          % endif
       - "danger_more_abuse_other_children": |
           % if children[1].in_danger or children[2].in_danger:
           True
