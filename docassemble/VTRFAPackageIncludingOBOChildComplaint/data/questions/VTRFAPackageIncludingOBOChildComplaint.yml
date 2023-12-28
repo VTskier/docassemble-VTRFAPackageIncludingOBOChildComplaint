@@ -176,60 +176,43 @@ code: |
   allowed_courts = interview_metadata["RFApackage"]["allowed courts"]
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
-  nav.set_section("screening")
-  
-  
-  ##initial_screening_questions##
-  what_want_to_do
-  if what_want_to_do == 'extend_or_change':
-    initial_screening_questions_1_exit
-    
-  relationship_question
-  if relationship_question == 'Family member (may include spouse, ex-spouse, parent, aunt/uncle, cousin)':
-    if not sixteen_or_older:
-      initial_screening_questions_2_exit
-  if relationship_question == 'Current or former sexual partner':
-    if not sixteen_or_older:
-      initial_screening_questions_2_exit
-      
-  if relationship_question == 'Someone who lives with you or used to live with you':
-    if not sixteen_or_older:
-      initial_screening_questions_2_exit
-  if relationship_question == 'None of the above':
-    initial_screening_questions_2_exit_a
-        
-  plaintiff_lives_in_vermont
-  if plaintiff_lives_in_vermont:
-    defendant_lives_in_vermont
-    if defendant_lives_in_vermont:
-      initial_screening_questions_5_continue
-    elif defendant_lives_in_vermont is None:
-      initial_screening_questions_5_important_note
-    else:
-      initial_screening_questions_5_exit_b
-      
-  if not plaintiff_lives_in_vermont:
-    defendant_lives_in_vermont
-    if defendant_lives_in_vermont:
-      initial_screening_questions_5_continue
-    elif defendant_lives_in_vermont is None:
-      initial_screening_questions_5_important_note
-    else:
-      initial_screening_questions_5_exit_a
 
-  
-  #main questions
   trial_court
   docket_number
   set_progress(8)
-  
   who_needs_protection  
+  
+  ##order on behalf of child(ren) only##
   if who_needs_protection == 'order_obo_child':
+    nav.set_section("screening")
+    what_want_to_do
+    if what_want_to_do == 'extend_or_change':
+      initial_screening_questions_1_exit
+    plaintiff_lives_in_vermont
+    if plaintiff_lives_in_vermont:
+      defendant_lives_in_vermont
+      if defendant_lives_in_vermont:
+        initial_screening_questions_5_continue
+      elif defendant_lives_in_vermont is None:
+        initial_screening_questions_5_important_note
+      else:
+        initial_screening_questions_5_exit_b
+        
+    if not plaintiff_lives_in_vermont:
+      defendant_lives_in_vermont
+      if defendant_lives_in_vermont:
+        initial_screening_questions_5_continue
+      elif defendant_lives_in_vermont is None:
+        initial_screening_questions_5_important_note
+      else:
+        initial_screening_questions_5_exit_a
+    nav.set_section("about")
     users.gather()
     users[0].name.first
     users[0].birthdate
     users[0].address.address
     users[0].phone_number
+    nav.set_section("kids")
     children.gather()
     children[0].name.first
     children[0].birthdate
@@ -253,56 +236,90 @@ code: |
 
 
 
+  else:
+    ##order for self or self and kids##
+    nav.set_section("screening")
+    what_want_to_do
+    if what_want_to_do == 'extend_or_change':
+      initial_screening_questions_1_exit
+      
+    relationship_question
+    if relationship_question == 'Family member (may include spouse, ex-spouse, parent, aunt/uncle, cousin)':
+      if not sixteen_or_older:
+        initial_screening_questions_2_exit
+    if relationship_question == 'Current or former sexual partner':
+      if not sixteen_or_older:
+        initial_screening_questions_2_exit
+        
+    if relationship_question == 'Someone who lives with you or used to live with you':
+      if not sixteen_or_older:
+        initial_screening_questions_2_exit
+    if relationship_question == 'None of the above':
+      initial_screening_questions_2_exit_a
+          
+    plaintiff_lives_in_vermont
+    if plaintiff_lives_in_vermont:
+      defendant_lives_in_vermont
+      if defendant_lives_in_vermont:
+        initial_screening_questions_5_continue
+      elif defendant_lives_in_vermont is None:
+        initial_screening_questions_5_important_note
+      else:
+        initial_screening_questions_5_exit_b
+        
+    if not plaintiff_lives_in_vermont:
+      defendant_lives_in_vermont
+      if defendant_lives_in_vermont:
+        initial_screening_questions_5_continue
+      elif defendant_lives_in_vermont is None:
+        initial_screening_questions_5_important_note
+      else:
+        initial_screening_questions_5_exit_a
+    nav.set_section("about")
+    users.gather()
+    set_parts(subtitle=str(users))
+    users[0].name.first
+    users[0].birthdate
+    users[0].address.address
+    ask_if_user_gets_reach_up
+    users[0].phone_number
+    users[0].email
+    set_progress(16)
+    share_contact
+    children.gather()
+    set_progress(24)
+    nav.set_section('defendant')
+    ex_spouse
+    other_parties.gather()
+    set_progress(32)
+    other_parties_estimated_age
+    ask_defendant_address
+    other_parties[0].phone_number
+    more_about_defendant
+    nav.set_section('incidents')
+    recent_incident_date
+    set_progress(40)
+    if not recent_incident_most_serious:
+      serious_incident_date
+    other_incident
+    set_progress(50)
+    danger_more_abuse
+    nav.set_section('ask_weapons')
+    weapons.gather()
+    used_firearm
+    nav.set_section('order')
+    set_progress(60)
+    if users1_no_shelter: 
+      rent_or_own
+    request_not_abuse
+    if request_temp_PRR:
+      get_kids_relationships
+    if other_request:
+      request_other_description
+    set_progress(70)
+  
   
 
-  nav.set_section("about")
-  users.gather()
-  set_parts(subtitle=str(users))
-  users[0].name.first
-  users[0].birthdate
-  users[0].address.address
-  ask_if_user_gets_reach_up
-  users[0].phone_number
-  users[0].email
-  set_progress(16)
-  share_contact
-  children.gather()
-  set_progress(24)
-  #set_parts(subtitle=str(other_parties))
-  nav.set_section('defendant')
-  ex_spouse
-  other_parties.gather()
-  set_progress(32)
-  other_parties_estimated_age
-  ask_defendant_address
-  other_parties[0].phone_number
-  more_about_defendant
-  nav.set_section('incidents')
-  recent_incident_date
-  set_progress(40)
-  if not recent_incident_most_serious:
-    serious_incident_date
-  other_incident
-  set_progress(50)
-  danger_more_abuse
-  nav.set_section('ask_weapons')
-  weapons.gather()
-  used_firearm
-  nav.set_section('order')
-  set_progress(60)
-  if users1_no_shelter: 
-    rent_or_own
-  request_not_abuse
-  if request_temp_PRR:
-    get_kids_relationships
-  if other_request:
-    request_other_description
-  set_progress(70)
-  
-  
-  
-    
-    
   request_all_emergency  
   existing_order
   nav.set_section('service')
@@ -329,6 +346,7 @@ sections:
   - intro: Introduction
   - screening: Is this interview right for you
   - about: About you
+  - kids: About the children
   - defendant: About the defendant
   - incidents: What happened
   - ask_weapons: Weapons
@@ -745,7 +763,7 @@ fields:
       It can be:
       
       * the county you live in, or
-      * the Vermont county you left when you were fleeing from abuse, or
+      * the Vermont county you left if you were fleeing from abuse, or
       * the county the other person lives in (the "defendant").
       
       While a RFA order is in effect, it is good **anywhere** in Vermont and the United States.
