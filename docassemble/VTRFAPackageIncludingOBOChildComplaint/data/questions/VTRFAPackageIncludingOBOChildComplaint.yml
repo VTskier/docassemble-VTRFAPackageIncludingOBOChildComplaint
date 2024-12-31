@@ -1,5 +1,13 @@
-# pick this up again at id: what happened most recently
-# need to show and hide those questions depending on RFA OBO or not
+# check if I'm using the most recent PDF templates! might need to copy my fields to new PDFs
+# how do I get this to work with show and hide?   
+#       - "Has the defendant used, displayed or threatened to use a **gun/firearm** against the child/children or against another family member?": used_firearm
+    #datatype: yesnoradio
+    #show if: |
+      #val("who_needs_protection") == "order_obo_child"
+
+# update progress sections in OBO section
+# need to add OBO affidavit
+# add validation code where they need to choose at least one item
 
 
 
@@ -178,66 +186,75 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
 
-  #  trial_court
-  #  docket_number
-  #  set_progress(8)
+  trial_court
+  docket_number
+  set_progress(8)
   who_needs_protection  
   
   ##order on behalf of child(ren) only##
   if who_needs_protection == 'order_obo_child':
-    #    nav.set_section("screening")
-    #    what_want_to_do
-    #    if what_want_to_do == 'extend_or_change':
-    #      initial_screening_questions_1_exit
-    #    plaintiff_lives_in_vermont
-    #    if plaintiff_lives_in_vermont:
-    #      defendant_lives_in_vermont
-    #      if defendant_lives_in_vermont:
-    #        initial_screening_questions_5_continue
-    #      elif defendant_lives_in_vermont is None:
-    #        initial_screening_questions_5_important_note
-    #      else:
-    #        initial_screening_questions_5_exit_b
-    #        
-    #    if not plaintiff_lives_in_vermont:
-    #      defendant_lives_in_vermont
-    #      if defendant_lives_in_vermont:
-    #        initial_screening_questions_5_continue
-    #      elif defendant_lives_in_vermont is None:
-    #        initial_screening_questions_5_important_note
-    #      else:
-    #        initial_screening_questions_5_exit_a
-    #    nav.set_section("about")
-    #    users.gather()
-    #    users[0].name.first
-    #    users[0].birthdate
-    #    users[0].address.address
-    #    users[0].phone_number
-    #    nav.set_section("kids")
-    #    children.gather()
-    #    children[0].name.first
-    #    children[0].birthdate
-    #    other_parties.gather()
-    #    other_parties[0].name.first
-    #    other_parties_estimated_age
-    #    other_parties[0].address.address
-    #    parent_guardian
-    #    more_about_situation
-    #    if children1_no_shelter:
-    #      rent_or_own
-    #    set_progress(12)
-    #    nav.set_section('incidents')
+    nav.set_section("screening")
+    what_want_to_do
+    if what_want_to_do == 'extend_or_change':
+      initial_screening_questions_1_exit
+    plaintiff_lives_in_vermont
+    if plaintiff_lives_in_vermont:
+      defendant_lives_in_vermont
+      if defendant_lives_in_vermont:
+        initial_screening_questions_5_continue
+      elif defendant_lives_in_vermont is None:
+        initial_screening_questions_5_important_note
+      else:
+        initial_screening_questions_5_exit_b
+        
+    if not plaintiff_lives_in_vermont:
+      defendant_lives_in_vermont
+      if defendant_lives_in_vermont:
+        initial_screening_questions_5_continue
+      elif defendant_lives_in_vermont is None:
+        initial_screening_questions_5_important_note
+      else:
+        initial_screening_questions_5_exit_a
+    nav.set_section("about")
+    users.gather()
+    users[0].name.first
+    users[0].birthdate
+    users[0].address.address
+    users[0].phone_number
+    nav.set_section("kids")
+    children.gather()
+    children[0].name.first
+    children[0].birthdate
+    parent_guardian
+    nav.set_section('defendant')
+    other_parties.gather()
+    other_parties[0].name.first
+    other_parties_estimated_age
+    other_parties[0].address.address
+    more_about_situation
+    if children1_no_shelter:
+      rent_or_own
+    set_progress(12)
+    nav.set_section('incidents')
     recent_incident_date_OBO
     set_progress(40)
     if not recent_incident_most_serious:
       serious_incident_date
     serious_incident_checkboxes_OBO
+    set_progress(60)
     if danger_more_abuse_OBO:
       get_kids_in_danger
+    nav.set_section('ask_weapons')
+    if used_firearm:
+      weapons.gather()
+    nav.set_section('order')
+    set_progress(60)
     request_not_abuse_kids
     if request_temp_PRR:
       get_kids_relationships
-
+    if other_request:
+      request_other_description
+    set_progress(70)
 
 
   else:
@@ -1530,10 +1547,14 @@ id: Weapons
 question: |
   Weapons
 subquestion: |
-  Weapons can make this a more dangerous time for you and/or your children. If you let the court know about weapons, they may be able to collect the weapons from the defendant as part of the court order. This can help keep you safe.
+  Weapons can make this a more dangerous time for you and/or the children. If you let the court know about weapons, they may be able to collect the weapons from the defendant as part of the court order. This can help keep you safe.
 fields:
   - "Has the defendant used, displayed or threatened to use a **gun/firearm** against you or against another family member?": used_firearm
     datatype: yesnoradio
+  - "Has the defendant used, displayed or threatened to use a **gun/firearm** against the child/children or against another family member?": used_firearm
+    datatype: yesnoradio
+    show if: |
+      val("who_needs_protection") == "order_obo_child"
   - note: The question above asks specifically about fireams (guns). This next question is found on a different form and it asks about **any** deadly weapons.
   - "Has the defendant used, displayed or threatened to use a **gun/firearm or another deadly weapon** against you or another family member?": used_weapon
     datatype: yesnoradio
@@ -1687,7 +1708,7 @@ id: Existing orders or court proceedings
 question: |
   Existing orders or court proceedings
 subquestion: |
-  Is there an existing court order or a pending court proceeding involving you, the defendant, and/or your child or children? 
+  Is there an existing court order or a pending court proceeding involving you, the defendant, and/or the child or children? 
   
   Don't include things you plan to do. Only include things that have been submitted to the court already.
 fields:  
@@ -3396,12 +3417,7 @@ attachment:
       - "trial_court_county": ${ trial_court.address.county }
       - "docket_number": ${ docket_number }
       - "children1_name": ${ children[0] }
-      - "children1_name": ${ children[0] }
-      - "children1_name": ${ children[0] }
       - "children1_birthdate": ${ format_date(children[0].birthdate, format='M/d/yyyy') }
-      - "children1_birthdate": ${ format_date(children[0].birthdate, format='M/d/yyyy') }
-      - "children1_birthdate": ${ format_date(children[0].birthdate, format='M/d/yyyy') }
-      - "other_parties1_name": ${ other_parties[0] }
       - "other_parties1_name": ${ other_parties[0] }
       - "other_parties1_birthdate": >-
           ${ "/".join([str(f) for f in [other_parties[0].birth_month, other_parties[0].birth_day, other_parties[0].birth_year] if f]) }
@@ -3483,14 +3499,19 @@ attachment:
       - "used_firearm": ${ used_firearm }
       - "incarcerated": ${ incarcerated }
       - "children1_no_shelter": ${ children1_no_shelter }
-      - "residence_shared_address": ${ residence_shared_address }
-      - "residence_owned": ${ residence_owned }
-      - "residence_rented": ${ residence_rented }
-      - "residence_of_users1": ${ residence_of_users1 }
-      - "residence_of_both": ${ residence_of_both }
-      - "residence_of_other": ${ residence_of_other }
-      - "residence_of_OP": ${ residence_of_OP }
-      - "request_not_abuse_children": ${ request_not_abuse_children }
+      - "residence_shared_address": |
+          % if defined('residence_shared_address'):
+          ${ residence_shared_address }
+          % elif defined('A_new_residence_shared_address'):
+          ${ A_new_residence_shared_address }
+          % endif
+      - "residence_of_users1": ${ whose_name == "residence_of_users1"  }
+      - "residence_owned": ${ rent_or_own == "residence_owned" }
+      - "residence_rented": ${ rent_or_own == "residence_rented" }
+      - "residence_of_OP": ${ whose_name == "residence_of_OP" }
+      - "residence_of_other": ${ whose_name == "residence_of_other" }
+      - "residence_of_both": ${ whose_name == "residence_of_both" }
+      - "request_not_abuse_children": ${ request_not_abuse_kids }
       - "request_no_stalking_assault": ${ request_no_stalking_assault }
       - "request_leave": ${ request_leave }
       - "request_no_firearms": ${ request_no_firearms }
@@ -3499,21 +3520,21 @@ attachment:
       - "request_control_of_pet": ${ request_control_of_pet }
       - "request_stay_away_feet": ${ request_stay_away_feet }
       - "request_stay_away": ${ request_stay_away }
-      - "request_no_contact_children": ${ request_no_contact_children }
+      - "request_no_contact_children": ${ request_no_contact }
       - "request_temp_PRR": ${ request_temp_PRR }
       - "other_children_PRR_names": ${ other_children_PRR_names }
       - "other_children_PRR": ${ other_children_PRR }
       - "request_supervised_contact": ${ request_supervised_contact }
       - "supervisor1_name": ${ supervisor1_name }
       - "supervisor1_location": ${ supervisor1_location }
-      - "request_children_exchange": ${ request_children_exchange }
+      - "request_children_exchange": ${ request_supervised_exchange }
       - "supervisor2_location": ${ supervisor2_location }
       - "supervisor2_name": ${ supervisor2_name }
-      - "request_no_drug_or_alcohol": ${ request_no_drug_or_alcohol }
-      - "request_no_punish": ${ request_no_punish }
+      - "request_no_drug_or_alcohol": ${ request_no_drugs_alcohol }
+      - "request_no_punish": ${ request_no_punishment }
       - "request_child_support": ${ request_child_support }
       - "request_other_description": ${ request_other_description }
-      - "request_other": ${ request_other }
+      - "request_other": ${ other_request }
       - "request_all_emergency": ${ request_all_emergency }
       - "signature_date": ${ signature_date }
       - "users1_signature": ${ users[0].signature_if_final(i) }
