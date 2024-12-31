@@ -178,66 +178,65 @@ code: |
   user_role = "plaintiff"
   user_ask_role = "plaintiff"
 
-  trial_court
-  docket_number
-  set_progress(8)
+  #  trial_court
+  #  docket_number
+  #  set_progress(8)
   who_needs_protection  
   
   ##order on behalf of child(ren) only##
   if who_needs_protection == 'order_obo_child':
-    nav.set_section("screening")
-    what_want_to_do
-    if what_want_to_do == 'extend_or_change':
-      initial_screening_questions_1_exit
-    plaintiff_lives_in_vermont
-    if plaintiff_lives_in_vermont:
-      defendant_lives_in_vermont
-      if defendant_lives_in_vermont:
-        initial_screening_questions_5_continue
-      elif defendant_lives_in_vermont is None:
-        initial_screening_questions_5_important_note
-      else:
-        initial_screening_questions_5_exit_b
-        
-    if not plaintiff_lives_in_vermont:
-      defendant_lives_in_vermont
-      if defendant_lives_in_vermont:
-        initial_screening_questions_5_continue
-      elif defendant_lives_in_vermont is None:
-        initial_screening_questions_5_important_note
-      else:
-        initial_screening_questions_5_exit_a
-    nav.set_section("about")
-    users.gather()
-    users[0].name.first
-    users[0].birthdate
-    users[0].address.address
-    users[0].phone_number
-    nav.set_section("kids")
-    children.gather()
-    children[0].name.first
-    children[0].birthdate
-    other_parties.gather()
-    other_parties[0].name.first
-    other_parties_estimated_age
-    other_parties[0].address.address
-    parent_guardian
-    more_about_situation
-    if children1_no_shelter:
-      rent_or_own
-    set_progress(12)
-    nav.set_section('incidents')
-    recent_incident_date
+    #    nav.set_section("screening")
+    #    what_want_to_do
+    #    if what_want_to_do == 'extend_or_change':
+    #      initial_screening_questions_1_exit
+    #    plaintiff_lives_in_vermont
+    #    if plaintiff_lives_in_vermont:
+    #      defendant_lives_in_vermont
+    #      if defendant_lives_in_vermont:
+    #        initial_screening_questions_5_continue
+    #      elif defendant_lives_in_vermont is None:
+    #        initial_screening_questions_5_important_note
+    #      else:
+    #        initial_screening_questions_5_exit_b
+    #        
+    #    if not plaintiff_lives_in_vermont:
+    #      defendant_lives_in_vermont
+    #      if defendant_lives_in_vermont:
+    #        initial_screening_questions_5_continue
+    #      elif defendant_lives_in_vermont is None:
+    #        initial_screening_questions_5_important_note
+    #      else:
+    #        initial_screening_questions_5_exit_a
+    #    nav.set_section("about")
+    #    users.gather()
+    #    users[0].name.first
+    #    users[0].birthdate
+    #    users[0].address.address
+    #    users[0].phone_number
+    #    nav.set_section("kids")
+    #    children.gather()
+    #    children[0].name.first
+    #    children[0].birthdate
+    #    other_parties.gather()
+    #    other_parties[0].name.first
+    #    other_parties_estimated_age
+    #    other_parties[0].address.address
+    #    parent_guardian
+    #    more_about_situation
+    #    if children1_no_shelter:
+    #      rent_or_own
+    #    set_progress(12)
+    #    nav.set_section('incidents')
+    recent_incident_date_OBO
     set_progress(40)
     if not recent_incident_most_serious:
       serious_incident_date
-    OBO_danger_more_abuse
-    if OBO_danger_more_abuse:
+    serious_incident_checkboxes_OBO
+    if danger_more_abuse_OBO:
       get_kids_in_danger
     request_not_abuse_kids
     if request_temp_PRR:
       get_kids_relationships
-      other_children_PRR
 
 
 
@@ -401,9 +400,11 @@ mandatory: True
 code: |
   if who_needs_protection == 'order_obo_child':
     RFAcomplaintonbehalfofminor_attachment.enabled = True
+    RFAaffidavit.enabled = True
     RFAcomplaint.enabled = False
   else:
     RFAcomplaintonbehalfofminor_attachment = False
+    RFAaffidavit.enabled = True
     RFAcomplaint.enabled = True
 ---
 id: OBO CHILD how children related to you and defendant
@@ -473,7 +474,7 @@ question: |
 subquestion: |
   If you want to get a court order that starts right way, answer **Yes** to this question.
 fields:
-  - "Is there immediate danger of more abuse from the defendant?": OBO_danger_more_abuse
+  - "Is there immediate danger of more abuse from the defendant?": danger_more_abuse_OBO
     datatype: yesnoradio
 ---
 id: OBO children in danger relationships
@@ -1148,6 +1149,23 @@ fields:
     datatype: al_international_phone
     required: False    
 ---
+template: coercive_control
+subject: About coercive control
+content: |
+  Vermont recently changed how domestic violence is defined within the civil courts. Starting July 1, 2024, the term “coercive control” is now included in the definition of abuse in Vermont.
+  
+  Coercive control is a pattern of behavior that seeks to control what you do or do not do. Coercive control is a form of emotional and psychological abuse. It can hurt your mental and emotional well-being.
+  
+  [Learn more on the VTLawHelp.org website.](https://vtlawhelp.org/coercive-control)
+---
+template: stalking
+subject: About stalking
+content: |
+  Stalking is when a person follows, watches, threatens you or another person, or tampers with your property at least two times and makes you afraid. Stalking includes phone calls, mail, email, comments on social media, faxes and written notes. [Read the law here.](https://legislature.vermont.gov/statutes/section/12/178/05131)
+  
+  Stalking is very complicated. Ask a lawyer about this.
+
+---
 id: what happened most recently
 question: |
   What happened -- most recently
@@ -1158,88 +1176,23 @@ subquestion: |
   
   Note: **The defendant will get a copy of the affidavit** if the judge gives you a temporary order or if the case goes to a hearing.
 fields:
-  - "When was the most recent incident?": recent_incident_date
-    maxlength: 14
-  - note: |
-      If you know the exact date, use this date format mm/dd/yyyy. If you don’t, it’s OK to type something short like “December 20XX.”
-  - "What was the time of the most recent incident? You can estimate if you don't know for sure.": recent_incident_time
-    required: False
-    maxlength: 16
-  - "In what town was the most recent incident?": recent_incident_town
-    maxlength: 26
-    required: False
-  - "In what state was the most recent incident?": recent_incident_state
-    code: |
-      states_list()
-    required: False
-  - note: |
-      <span style="color:red;">*</span> Please enter either a state, above, OR the area outside the U.S., below.
-  - "If it happened outside of the United States, enter the province here and the country.": other_recent_incident_state
-    required: False
-    maxlength: 12
-  - "Describe the most recent incident with as much detail as possible.": recent_incident_description
-    input type: area
-    rows: 20
-  - You were the target of the recent abuse: recent_incident_users1
-    datatype: yesnoradio  
-    hide if: |
-      variable: who_needs_protection
-      is:'order_obo_child'
-  - Your children were the target of the recent abuse: recent_incident_children
-    datatype: yesnoradio   
-    hide if: |
-      variable: who_needs_protection
-      is:'order_obo_child'
-  - Which of the children were the target of the recent abuse?: recent_incident_children_names 
-    datatype: object_checkboxes
-    required: False
-    none of the above: False
-    css class: indent-me
-    choices:
-      - children 
-    show if: recent_incident_children    
-  - Other children that were not mentioned?: has_recent_incident_other_children
-    datatype: yesnoradio
-    required: False
-    css class: indent-me
-    show if: recent_incident_children
-  - List their names with commas in between: recent_incident_other_children
-    datatype: area
-    css class: indent-me
-    show if: has_recent_incident_other_children
-  - note: |
-      ---
-    show if: recent_incident_children
     
   - note: |
-      Check all that apply to this incident. Select at least one statement.
+      
+      ${ collapse_template(coercive_control) }
+
+      ${ collapse_template(stalking) }
+      
+      **Check all that apply to this incident.** Select at least one statement.
+
   - "The defendant caused or attempted to cause physical harm": recent_incident_harm
     datatype: yesno
   - "The defendant placed you and/or them in fear of imminent serious physical harm": recent_incident_fear
     datatype: yesno
-    hide if: |
-      variable: who_needs_protection
-      is:'order_obo_child'
-  - "The defendant placed them in fear of imminent serious physical harm": recent_incident_fear
-    datatype: yesno
-    show if: |
-      variable: who_needs_protection
-      is:'order_obo_child'
-
-
-
-
-      
   - "The defendant abused the child/children -- meaning they physically injured or otherwise treated the child(ren) in a manner which placed child(ren's) life, health, development or welfare in jeopardy.": recent_incident_abused
     datatype: yesno
-    hide if: |
-      variable: who_needs_protection
-      is:'order_obo_child'
   - "The defendant stalked you and/or the child/children. Stalking is defined in Vermont law here: [12 V.S.A 5131(6)](https://legislature.vermont.gov/statutes/section/12/178/05131)": recent_incident_stalked
     datatype: yesno
-    hide if: |
-      variable: who_needs_protection
-      is:'order_obo_child'
   - note: |
       Stalking is very complicated. Ask a lawyer about this.
     css class: indent-me
@@ -1265,9 +1218,6 @@ fields:
     show if: recent_incident_stalked
   - "The defendant sexually assaulted you and/or the child/children. Sexual assault is defined in Vermont law here: [15 V.S.A 5131(5)](https://legislature.vermont.gov/statutes/section/12/178/05131)": recent_incident_assault
     datatype: yesno
-    hide if: |
-      variable: who_needs_protection
-      is:'order_obo_child'
   - "The defendant sexually assault you": recent_incident_assault_users1
     datatype: yesnoradio
     css class: indent-me
@@ -1279,12 +1229,124 @@ fields:
   - note: |
       ---
     show if: recent_incident_assault
+
+  - "The defendant coercively controlled you and/or the child/children. Coercive control is defined in Vermont law here: [15 V.S.A. § 1101(2)](https://legislature.vermont.gov/statutes/section/15/021/01101). A summary is found [here](https://legislature.vermont.gov/Documents/2024/Docs/ACTS/ACT103/ACT103%20Act%20Summary.pdf).": recent_incident_coercive
+    datatype: yesno
+  - "The defendant coercively controlled you": recent_incident_coercive_users1
+    datatype: yesnoradio
+    css class: indent-me
+    show if: recent_incident_coercive
+  - "The defendant coercively controlled the child/children": recent_incident_coercive_children
+    datatype: yesnoradio
+    css class: indent-me
+    show if: recent_incident_coercive
+  - note: |
+      ---
+    show if: recent_incident_assault
+  - "When did this abusive behavior first start?": recent_incident_coercive_start_date
+    maxlength: 14
+    show if: recent_incident_coercive  
     
-#validation code: |
-#  if (recent_incident_state == "") and (other_recent_incident_state == ""):
-#    validation_error("You must enter a state in the United States, or an area outside of the United States")
-#  if not recent_incident_harm and not recent_incident_fear and not recent_incident_abused and not recent_incident_stalked and not recent_incident_assault:
-#    validation_error("Select at least one incident")
+  - "When was the most recent incident?": recent_incident_date
+    maxlength: 14
+  - note: |
+      If you know the exact date, use this date format mm/dd/yyyy. If you don’t, it’s OK to type something short like “December 20XX.”
+    
+  - "What was the time of the most recent incident? You can estimate if you don't know for sure.": recent_incident_time
+    required: False
+    maxlength: 16
+  - "In what town was the most recent incident?": recent_incident_town
+    maxlength: 26
+    required: False
+  - "In what state was the most recent incident?": recent_incident_state
+    code: |
+      states_list()
+    required: False
+  - note: |
+      <span style="color:#e11717;">*</span> Please enter either a state, above, OR the area outside the U.S., below.
+  - "If it happened outside of the United States, enter the province here and the country.": other_recent_incident_state
+    required: False
+    maxlength: 12
+  - "Describe the most recent incident with as much detail as possible.": recent_incident_description
+    input type: area
+    rows: 20
+  - note: |
+      If alleging coercive control, describe the behavior of the defendant. Remember, to prove coercive control, you must show a pattern of behavior. This means you have experienced these behaviors more than once.
+    show if: recent_incident_coercive
+  - You were the target of the recent abuse: recent_incident_users1
+    datatype: yesnoradio  
+  - Your children were the target of the recent abuse: recent_incident_children
+    datatype: yesnoradio   
+  - Which of the children were the target of the recent abuse?: recent_incident_children_names 
+    datatype: object_checkboxes
+    required: False
+    none of the above: False
+    css class: indent-me
+    choices:
+      - children 
+    show if: recent_incident_children    
+  - Other children that were not mentioned?: has_recent_incident_other_children
+    datatype: yesnoradio
+    required: False
+    css class: indent-me
+    show if: recent_incident_children
+  - List their names with commas in between: recent_incident_other_children
+    datatype: area
+    css class: indent-me
+    show if: has_recent_incident_other_children
+  - note: |
+      ---
+    show if: recent_incident_children
+
+
+
+validation code: |
+  if (recent_incident_state == "") and (other_recent_incident_state == ""):
+    validation_error("You must enter a state in the United States, or an area outside of the United States")
+  if not recent_incident_harm and not recent_incident_fear and not recent_incident_abused and not recent_incident_stalked and not recent_incident_assault and not recent_incident_coercive:
+    validation_error("Select at least one incident")
+
+---
+id: what happened most recently -- for RFA OBO a child
+question: |
+  What happened -- most recently
+subquestion: |
+  This is where you will describe the **most recent** incident of abuse. Be as detailed as possible. The judge needs to know exactly what happened. If you don't give enough details, you may not get an RFA order.
+  
+  See the [VTLawHelp.org legal help website](https://vtlawhelp.org/roadmap/relief-from-abuse/step-3#forms) for tips on what to include in your description. This information will be part of your "Affidavit". 
+  
+  Note: **The defendant will get a copy of the affidavit** if the judge gives you a temporary order or if the case goes to a hearing.
+fields:
+  - "When was the most recent incident?": recent_incident_date_OBO
+    maxlength: 14
+  - note: |
+      If you know the exact date, use this date format mm/dd/yyyy. If you don’t, it’s OK to type something short like “December 20XX.”
+  - "What was the time of the most recent incident? You can estimate if you don't know for sure.": recent_incident_time
+    required: False
+    maxlength: 16
+  - "In what town was the most recent incident?": recent_incident_town
+    maxlength: 26
+    required: False
+  - "In what state was the most recent incident?": recent_incident_state
+    code: |
+      states_list()
+    required: False
+  - note: |
+      <span style="color:red;">*</span> Please enter either a state, above, OR the area outside the U.S., below.
+  - "If it happened outside of the United States, enter the province here and the country.": other_recent_incident_state
+    required: False
+    maxlength: 12
+  - "Describe the most recent incident with as much detail as possible.": recent_incident_description
+    input type: area
+    rows: 20
+  - Which of the children were the target of the recent abuse?: recent_incident_children_names 
+    datatype: object_checkboxes
+    required: False
+    none of the above: False
+    css class: indent-me
+    choices:
+      - children 
+
 ---
 id: Was recent most serious too
 question: |
@@ -1324,6 +1386,42 @@ fields:
 validation code: |
   if (serious_incident_state == "") and (other_serious_incident_state == ""):
     validation_error("Please enter a state in the United States, or an area outside of the United States")
+---
+
+
+---
+id: select what happened during serious incident -- for RFA OBO a child
+continue button field: serious_incident_checkboxes_OBO
+question: |
+  During the most serious incident
+subquestion: |
+  Check all that apply to the most serious incident. Select at least one statement.
+
+fields:
+  - "The defendant abused the child/children -- meaning they physically injured or otherwise treated them in a manner which placed thier life, health, development or welfare in jeopardy.": serious_incident_abused_OBO
+    datatype: yesno
+  - "The defendant is a parent/legal guardian for the child/children and either (1) inflicted physical punishment out of anger, or (2) physically punished them in an excessive, unreasonable, or cruel manner.": serious_incident_parent_abuse_OBO
+    datatype: yesno
+  - "The defendant sexually assaulted the child/children. Sexual assault is defined in Vermont law here: [15 V.S.A 5131(5)](https://legislature.vermont.gov/statutes/section/12/178/05131)": serious_incident_assault_OBO
+    datatype: yesno
+  - "The defendant caused or attempted to cause physical harm to the child/children": recent_incident_harm_OBO
+    datatype: yesno
+  - "The defendant placed the child/children in fear of imminent serious physical harm": serious_incident_fear_OBO
+    datatype: yesno
+  - "The defendant stalked the child/children. Stalking is defined in Vermont law here: [12 V.S.A 5131(6)](https://legislature.vermont.gov/statutes/section/12/178/05131). ${ collapse_template(stalking) }": serious_incident_stalked_OBO
+    datatype: yesno
+      
+#validation code: |
+#  if (recent_incident_state == "") and (other_recent_incident_state == ""):
+#    validation_error("You must enter a state in the United States, or an area outside of the United States")
+#  if not recent_incident_harm and not recent_incident_fear and not recent_incident_abused and not recent_incident_stalked and not recent_incident_assault:
+#    validation_error("Select at least one incident")
+
+
+
+
+
+
 ---
 id: What happened other incidents
 question: |
@@ -1487,21 +1585,21 @@ fields:
     show if: request_stay_away    
   - "Order the defendant to not contact the child/children in any way": request_no_contact
     datatype: yesno    
-  - "Award temporary Parental Rights and Responsibilities (custody) of our child/children to me or someone else. (The child(ren) of you and the defendant.)": request_temp_PRR
+  - "Award temporary Parental Rights and Responsibilities (custody) of our child/children to me or someone else. (The child/children of you and the defendant.)": request_temp_PRR
     datatype: yesno  
   - note: If you choose custody, we will ask for the names of the children on the next screen.
     show if: request_temp_PRR   
   - "Order the defendant to have supervised contact with the child/children": request_supervised_contact
     datatype: yesno      
   - "Who would you like to supervise the visits?": supervisor1_name
-    maxlength: 2
+    maxlength: 20
     css class: indent-me
     show if: request_supervised_contact    
   - "In what location?": supervisor1_location
     maxlength: 30
     css class: indent-me
     show if: request_supervised_contact        
-  - "Order that the child/children will be picked up or dropped off at a certain supervised location": request_supervised_exchange
+  - "Order that the child/children will be picked up and dropped off at a certain supervised location": request_supervised_exchange
     datatype: yesno      
   - "Who would you like to supervise the pick-up and drop-offs?": supervisor2_name
     maxlength: 20
@@ -1513,7 +1611,7 @@ fields:
     show if: request_supervised_exchange
   - "Order defendant not to take any regulated drug unless it is prescribed by a physician, or drink alcohol, for at least 8 hours prior to a scheduled contact with the child/children, or during contact with the child/children). And if defendant appears to be under the influence of drugs or alcohol, allow me to cancel the scheduled visit with the child/children.": request_no_drugs_alcohol
     datatype: yesno
-  - "Order defendant not physically punish the child/children named above in any way": request_no_punishment
+  - "Order the defendant to not physically punish the child/children named above in any way": request_no_punishment
     datatype: yesno   
   - "Order the defendant to pay temporary child support for the child/children": request_child_support
     datatype: yesno
@@ -3343,13 +3441,13 @@ attachment:
       - "existing_order_OP_attorney": ${ existing_order_OP_attorney }
       - "serious_incident_date": ${ serious_incident_date.format() }
       - "serious_incident_yes": ${ True }
-      - "serious_incident_abused": ${ serious_incident_abused }
-      - "other_parties1_parent_abuse": ${ other_parties1_parent_abuse }
-      - "serious_incident_stalked_children": ${ serious_incident_stalked_children }
-      - "serious_incident_assault": ${ serious_incident_assault }
-      - "serious_incident_harm": ${ serious_incident_harm }
-      - "serious_incident_fear": ${serious_incident_fear }
-      - "danger_more_abuse": ${ OBO_danger_more_abuse }
+      - "serious_incident_abused": ${ serious_incident_abused_OBO }
+      - "other_parties1_parent_abuse": ${ serious_incident_parent_abuse_OBO }
+      - "serious_incident_stalked_children": ${ serious_incident_stalked_OBO }
+      - "serious_incident_assault": ${ serious_incident_assault_OBO }
+      - "serious_incident_harm": ${ recent_incident_harm_OBO }
+      - "serious_incident_fear": ${serious_incident_fear_OBO }
+      - "danger_more_abuse": ${ danger_more_abuse_OBO }
       - "danger_more_abuse_children": |
           % if children[0].in_danger:
           True
